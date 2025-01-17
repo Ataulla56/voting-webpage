@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voting Page</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Vote for Your Favorite Option</h1>
+    <form id="votingForm">
+      <label>
+        <input type="radio" name="vote" value="Option A" required> Ronaldo
+      </label><br>
+      <label>
+        <input type="radio" name="vote" value="Option B" required> Messi
+      </label><br>
+      <label>
+        <input type="radio" name="vote" value="Option C" required> Neymar 
+      </label><br>
+      <button type="submit">Submit Vote</button>
+    </form>
+    <div id="result" class="hidden">
+      <h2>Thank you for voting!</h2>
+      <p>Your choice has been recorded.</p>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      padding: 20px;
+    }
+
+    .message {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <div class="message">
+    <h1>Thank You for Voting!</h1>
+    <p>Your vote has been recorded.</p>
+  </div>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vote with Ethereum</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Vote with Ethereum</h1>
+    <p id="walletAddress">Wallet not connected</p>
+    <button id="connectWallet">Connect Wallet</button>
+
+    <form id="votingForm" class="hidden">
+      <label>
+        <input type="radio" name="vote" value="Option A" required> Option A
+      </label><br>
+      <label>
+        <input type="radio" name="vote" value="Option B" required> Option B
+      </label><br>
+      <label>
+        <input type="radio" name="vote" value="Option C" required> Option C
+      </label><br>
+      <button type="submit">Submit Vote</button>
+    </form>
+
+    <p id="transactionStatus"></p>
+  </div>
+
+  <script>
+    // Initialize variables
+    let provider;
+    let signer;
+
+    // Contract details (replace with your contract's details)
+    const contractAddress = "0xYourContractAddress"; // Replace with your contract address
+    const abi = [
+      // Replace with your contract ABI
+      "function vote(string memory option) public payable"
+    ];
+
+    // Connect Wallet
+    document.getElementById("connectWallet").addEventListener("click", async () => {
+      if (typeof window.ethereum !== "undefined") {
+        try {
+          // Request wallet connection
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+          provider = new ethers.providers.Web3Provider(window.ethereum);
+          signer = provider.getSigner();
+
+          // Get wallet address
+          const address = await signer.getAddress();
+          document.getElementById("walletAddress").textContent = `Connected: ${address}`;
+          document.getElementById("connectWallet").classList.add("hidden");
+          document.getElementById("votingForm").classList.remove("hidden");
+        } catch (error) {
+          console.error("Error connecting wallet:", error);
+        }
+      } else {
+        alert("MetaMask is not installed. Please install it to use this feature.");
+      }
+    });
+
+    // Voting logic
+    document.getElementById("votingForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const selectedOption = document.querySelector('input[name="vote"]:checked').value;
+
+      // Connect to the contract
+      const contract = new ethers.Contract(contractAddress, abi, signer);
+
+      try {
+        const transaction = await contract.vote(selectedOption, {
+          value: ethers.utils.parseEther("0.001") // Optional gas fee
+        });
+
+        document.getElementById("transactionStatus").textContent = "Transaction sent. Waiting for confirmation...";
+        await transaction.wait();
+        document.getElementById("transactionStatus").textContent = "Vote successfully recorded!";
+      } catch (error) {
+        console.error("Error voting:", error);
+        document.getElementById("transactionStatus").textContent = "Error submitting vote. Check console for details.";
+      }
+    });
+  </script>
+</body>
+</html>
+<!-- Show the address in the query string -->
+<a href="yourpage.html?wallet=0xYourWalletAddress">Click here to view wallet</a>
